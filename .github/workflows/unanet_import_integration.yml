@@ -62,10 +62,9 @@ jobs:
           cd unanet_imu
           ./unanet_imu.bat
         env:
-          SFTP_HOST: ${{ secrets.SFTP_HOST }}
-          SFTP_USER: ${{ secrets.SFTP_USER }}
-          SFTP_RSA_PRIVATE_KEY: ${{ secrets.SFTP_RSA_PRIVATE_KEY }}
+          CONCUR_API_DETAILS: ${{ secrets.CONCUR }}
         continue-on-error: true
+
 
 
 
