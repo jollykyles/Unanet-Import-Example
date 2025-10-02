@@ -40,15 +40,15 @@ jobs:
           echo unanet.url=${{ secrets.UNANET_URL }} > unanet_imu/imu_config.properties
           echo username=${{ secrets.UNANET_USERNAME }} >> unanet_imu/imu_config.properties
           echo password=${{ secrets.UNANET_PASSWORD }} >> unanet_imu/imu_config.properties
-          echo email.host=${{ secrets.EMAIL_HOST }} >> unanet_imu/imu_config.properties
-          echo email.port=${{ secrets.EMAIL_PORT }} >> unanet_imu/imu_config.properties
-          echo email.from=${{ secrets.EMAIL_FROM }} >> unanet_imu/imu_config.properties
-          echo email.to=${{ secrets.EMAIL_TO }} >> unanet_imu/imu_config.properties
-          echo email.ssl=false >> unanet_imu/imu_config.properties
-          echo email.enableStartTLS=true >> unanet_imu/imu_config.properties
-          echo positive.reporting=true >> unanet_imu/imu_config.properties
-          echo email.user=${{ secrets.EMAIL_USER }} >> unanet_imu/imu_config.properties
-          echo email.password=${{ secrets.EMAIL_PASSWORD }} >> unanet_imu/imu_config.properties
+          # echo email.host=${{ secrets.EMAIL_HOST }} >> unanet_imu/imu_config.properties
+          # echo email.port=${{ secrets.EMAIL_PORT }} >> unanet_imu/imu_config.properties
+          # echo email.from=${{ secrets.EMAIL_FROM }} >> unanet_imu/imu_config.properties
+          # echo email.to=${{ secrets.EMAIL_TO }} >> unanet_imu/imu_config.properties
+          # echo email.ssl=false >> unanet_imu/imu_config.properties
+          # echo email.enableStartTLS=true >> unanet_imu/imu_config.properties
+          # echo positive.reporting=true >> unanet_imu/imu_config.properties
+          # echo email.user=${{ secrets.EMAIL_USER }} >> unanet_imu/imu_config.properties
+          # echo email.password=${{ secrets.EMAIL_PASSWORD }} >> unanet_imu/imu_config.properties
           echo run.imports=expense >> unanet_imu/imu_config.properties
           echo expense.input.file=import.csv >> unanet_imu/imu_config.properties
           echo expense.log.file=import.log >> unanet_imu/imu_config.properties
@@ -64,6 +64,7 @@ jobs:
         env:
           CONCUR_API_DETAILS: ${{ secrets.CONCUR }}
         continue-on-error: true
+
 
 
 
