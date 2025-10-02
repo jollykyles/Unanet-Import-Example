@@ -51,12 +51,12 @@ jobs:
           echo positive.reporting=true >> unanet_imu/imu_config.properties
           echo email.user=${{ secrets.EMAIL_USER }} >> unanet_imu/imu_config.properties
           echo email.password=${{ secrets.EMAIL_PASSWORD }} >> unanet_imu/imu_config.properties
-          echo run.imports=person >> unanet_imu/imu_config.properties
-          echo person.input.file=import.csv >> unanet_imu/imu_config.properties
-          echo person.log.file=import.log >> unanet_imu/imu_config.properties
-          echo person.import.template=person >> unanet_imu/imu_config.properties
-          echo person.skip-file-check-warning=true >> unanet_imu/imu_config.properties
-          echo person.args= >> unanet_imu/imu_config.properties
+          echo run.imports=expense >> unanet_imu/imu_config.properties
+          echo expense.input.file=import.csv >> unanet_imu/imu_config.properties
+          echo expense.log.file=import.log >> unanet_imu/imu_config.properties
+          echo expense.import.template=expense >> unanet_imu/imu_config.properties
+          echo expense.skip-file-check-warning=true >> unanet_imu/imu_config.properties
+          echo expense.args= >> unanet_imu/imu_config.properties
           echo purge.days=0 >> unanet_imu/imu_config.properties
 
       - name: Run IMU Import
@@ -68,5 +68,6 @@ jobs:
           SFTP_USER: ${{ secrets.SFTP_USER }}
           SFTP_RSA_PRIVATE_KEY: ${{ secrets.SFTP_RSA_PRIVATE_KEY }}
         continue-on-error: true
+
 
 
