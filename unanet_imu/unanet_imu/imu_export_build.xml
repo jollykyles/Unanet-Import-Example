@@ -1,0 +1,319 @@
+<?xml version='1.0' encoding='utf-8'?>
+
+<project name="UnanetExport" default="export" basedir=".">
+   <description>Helps manage export interfaces from a Unanet system</description>
+
+   <!-- add antcontrib fuctionality -->
+   <taskdef resource="net/sf/antcontrib/antlib.xml" />
+
+   <tstamp>
+      <format property="run.timestamp" pattern="yyyy-MM-dd_H-mm-ss" />
+      <format property="todaysDate" pattern="MM/dd/yyyy" />
+   </tstamp>
+
+   <!-- Modify the files below before editing this build.xml file
+        (most customizations should be handled there). -->
+   <property file="imu_dynamic.properties"/>
+   <property file="imu_export_config.properties"/>	
+
+   <!-- include other files -->  
+   <import file="${basedir}/email-macro.xml"/>
+   <import file="${basedir}/purge-files.xml"/>
+
+   <condition property="purge-value-valid">
+      <equals arg1="0" arg2="${purge.days}"/>
+   </condition>
+
+   <property name="data.dir" value="${basedir}/data" />
+   <property name="run.dir" value="${data.dir}/${run.timestamp}" />
+   <property name="export.jar.dir" value="${basedir}/bin" />
+   <property name="run.log.dir" value="${run.dir}/logs" />
+   <property name="run.output.dir" value="${run.dir}/output" />
+   <property name="run.error.dir" value="${run.dir}/errors" />
+   <property name="error.file" value="${run.dir}/err.file" />
+
+   <target name="env">
+      <echo>basedir: ${basedir}</echo>
+      <echo>ant.file: ${ant.file}</echo>
+   </target>
+
+   <!-- The post-processing step will always run but by default it
+        does nothing.  If you have a post-processing step, modify
+        the imu_export_post_build.xml file to execute whatever processes
+        you need to. -->
+   <target name="-post-processing"
+           description="Custom processing after running exports">
+     <trycatch property="post-errors">
+       <try>
+         <ant antfile="imu_export_post_build.xml" />
+       </try>
+       <catch>
+         <echo>${post-errors}</echo>
+         <echo file="${error.file}" append="true">${post-errors}</echo>
+         <property name="run.has.error" value="true" />
+         <echo>Errors detected! Copying files to the errors directory...</echo>
+         <mkdir dir="${run.dir}/errors" />
+         <copy file="${run.log.dir}/${post-processing.output.log}"
+               todir="${run.error.dir}" />
+         <copy file="${run.log.dir}/${post-processing.error.log}"
+               todir="${run.error.dir}" />
+       </catch>
+     </trycatch>
+   </target>
+
+   <target name="-header">
+      <echo>Unanet IMU (export) version @VERSION@</echo>
+      <echo>Compiled on @TIMESTAMP@</echo>
+   </target>
+
+   <!-- This target is called prior to any other and verifies many properties -->
+   <target name="-init" depends="-header">
+
+      <!-- Created data directories -->
+      <mkdir dir="${data.dir}" />
+      <mkdir dir="${run.dir}" />
+      <mkdir dir="${run.log.dir}" />
+      <mkdir dir="${run.output.dir}" />
+      <record name="${run.log.dir}/run.log" emacsmode="true" action="start" />
+      <delete file="${error.file}" quiet="true"/>
+      <echo>Export Beginning...</echo>
+      <echo>All files related to this run will be in ${run.dir}.</echo>
+      <trycatch property="init-errors">
+         <try>
+            <antcall target="-validate-export" />
+            <antcall target="-validate-access" />
+         </try>
+         <catch>
+            <echo>${init-errors}</echo>
+            <mkdir dir="${run.dir}/errors" />
+            <copy file="${run.log.dir}/run.log" todir="${run.error.dir}" failonerror="false"/>
+            <send-mail subject="Unanet IMU (export) encountered a validation error!">
+               <![CDATA[
+               <p>${init-errors}
+               ]]>
+            	<attachments>
+                  <fileset dir="${run.log.dir}">
+                     <filename name="run.log"/>
+                  </fileset>
+            	</attachments>
+            </send-mail>
+            <fail>Export Failed.</fail>
+         </catch>
+      </trycatch>
+   </target>
+
+   <target name="-validate-export">
+
+      <!-- Verify the Export.jar is present -->
+      <echo>Validating Export.jar...</echo>
+      <if><available file="${export.jar.dir}/Export.jar" type="file"/><then>
+         <echo>Export.jar found!</echo>
+      </then>
+      <else>
+         <fail>Error! Cannot find the Export.jar file. Please make sure the export.jar.dir property is set correctly in the imu_export_config.properties file!</fail>
+      </else>
+      </if>
+   </target>
+
+   <target name="-validate-access">
+
+      <!-- Verify we can get to a Unanet system -->
+      <echo>Validating Access to Unanet system...</echo>
+      <condition property="unanet-access-check">
+        <http url="${unanet.url}"/>
+      </condition>
+      <fail unless="unanet-access-check">Error!
+         Cannot access your Unanet system (${unanet.url}.
+         Please make sure the unanet.url property is set correctly in the imu_export_config.properties file!
+      </fail>
+      <echo>Access to Unanet (${unanet.url}) verified!</echo>
+   </target>
+
+   <target name="export"
+           description="Initiates all exports defined in the run.exports property"
+           depends="-init,purge"
+           if="run.exports">
+
+      <!-- loop through all of the specified exports -->
+      <for list="${run.exports}" param="export" keepgoing="true" trim="true">
+         <sequential>
+            <trycatch property="errors">
+               <try>
+                  <echo>Executing the @{export} export...</echo>
+
+                  <!-- Verify the export output file is defined -->
+                  <if><isset property="@{export}.output.file" />
+                  <then>
+                     <echo>     Output File: ${@{export}.output.file}</echo>
+                  </then>
+                  <else>
+                     <fail>Output file property (@{export}.output.file) is not defined.</fail>
+                  </else>
+                  </if>
+
+                  <!-- report the template -->
+                  <echo>     Export Template: ${@{export}.export.template}</echo>
+
+                  <!-- resolve the optional saved criteria parameter -->
+                  <if><and>
+                     <isset property="@{export}.saved-criteria"/>
+                     <not><equals arg1="${@{export}.saved-criteria}" arg2=""/></not>
+                     </and>
+                  <then>
+                     <property name="saved-crit" value="@{export}.saved-criteria" />
+                     <propertycopy name="saved-crit2" from="${saved-crit}" />
+                     <echo>     Saved Criteria: ${saved-crit2}</echo>
+                     <property name="saved-crit-line" value='--criteria "${saved-crit2}"' />
+                  </then>
+                  <else>
+                     <property name="saved-crit-line" value="" />
+                  </else>
+                  </if>
+
+                  <!-- resolve the optional args parameter -->
+                  <if><isset property="@{export}.args" />
+                  <then>
+                     <property name="args-crit" value="@{export}.args" />
+                     <propertycopy name="args-crit2" from="${args-crit}" />
+                     <property name="args-crit-line" value="${args-crit2}" />
+                     <echo>     Custom Arguments: ${args-crit-line}</echo>
+                  </then>
+                  <else>
+                     <property name="args-crit-line" value="" />
+                  </else>
+                  </if>
+
+                  <!-- Run the command-line export -->
+                  <echo>     Running the Unanet command line export...</echo>
+                  <java dir="${export.jar.dir}"
+                        jar="${export.jar.dir}/Export.jar"
+                        fork="true"
+                        failonerror="false"
+                        resultproperty="export.result"
+                        output="${run.log.dir}/${@{export}.log.file}"
+                        error="${run.log.dir}/${@{export}.log.file}.err"
+                        outputproperty="export.output"
+                        maxmemory="128m">
+							<jvmarg value="-Dlog4j2.formatMsgNoLookups=true"/>
+                           <arg value="--url"/><arg value="${unanet.url}"/>
+                           <arg value="--username"/><arg value="${username}"/>
+                           <arg value="--password"/><arg value="${password}"/>
+                           <arg value="--template"/><arg value="${@{export}.export.template}"/>
+                           <arg value="--file"/><arg value="${run.output.dir}/${@{export}.output.file}"/>
+                           <arg line="${saved-crit-line}"/>
+                           <arg line="${args-crit-line}"/>
+                  </java>
+                  <echo>     Export Return Code: ${export.result}</echo>
+
+                  <if><equals arg1="${export.result}" arg2="0" /><then>
+                     <echo>     Export returned a successful return code.</echo>
+                     <if><and>
+                         <available file="${run.output.dir}/${@{export}.output.file}" type="file"/>
+                         <length file="${run.output.dir}/${@{export}.output.file}" when="greater" length="0"/>
+                         </and><then>
+                        <echo>     Output file has data.</echo>
+                     </then>
+                     <else> <!-- output file does not have data -->
+                        <if><equals arg1="${@{export}.empty-output-file-ok}" arg2="false" /><then>
+                           <fail>     Error! The specified output file (${@{export}.output.file}) missing or empty.</fail>
+                        </then>
+                        <else>
+                           <echo>     ${@{export}.output.file} is missing or empty - skipping this export.</echo>
+                        </else>
+                        </if>
+                     </else>
+                     </if>
+                     </then>
+                  <else>
+                     <fail>     Errors detected! Copying files to the errors directory...</fail>
+                  </else>
+                  </if>
+               </try>
+               <catch>
+                  <echo>     ${errors}</echo>
+                  <echo file="${error.file}" append="true"><![CDATA[<li>]]>${errors}<![CDATA[</li>]]></echo>
+                  <property name="run.has.error" value="true" />
+                  <mkdir dir="${run.dir}/errors" />
+                  <concat destfile="${run.log.dir}/${@{export}.log.file}" append="true">
+                     <filelist dir="${run.log.dir}" files="${@{export}.log.file}.err"/>
+                  </concat>
+                  <copy file="${run.log.dir}/${@{export}.log.file}"
+                        todir="${run.error.dir}" failonerror="false"/>
+               </catch>
+               <finally>
+                  <var name="criteria-args" unset="true" />
+                  <var name="saved-crit" unset="true" />
+                  <var name="saved-crit2" unset="true" />
+                  <var name="saved-crit-line" unset="true" />
+                  <var name="args-crit" unset="true" />
+                  <var name="args-crit2" unset="true" />
+                  <var name="args-crit-line" unset="true" />
+                  <var name="export.result" unset="true" />
+                  <var name="export.output" unset="true" />
+                  <echo>     @{export} processing complete.</echo>
+                  <echo/>
+                  <echo/>
+               </finally>
+            </trycatch>
+         </sequential>
+      </for>
+      <antcallback target="-post-processing" return="run.has.error"/>
+      <record name="${run.log.dir}/run.log" action="stop" />
+
+      <!-- email files if any errors occured -->
+      <if><isset property="run.has.error" /><then>
+         <copy file="${run.log.dir}/run.log" todir="${run.error.dir}" failonerror="false"/>
+         <loadfile property="error-list" srcFile="${error.file}" failonerror="false"/>
+<!--          <send-mail subject="The Unanet IMU (export) had one or more errors!">
+            <![CDATA[
+            <p>The Unanet IMU (export) has encountered one or more errors:
+
+            <ul>
+            ${error-list}
+            </ul>
+
+            <p>The following list of files is attached to this email:
+            <ul>
+              <li>run.log - the mail log of the complete run</li>
+              <li>each output file from export(s) that encountered an error</li>
+            </ul>
+            ]]>
+            <attachments>
+               <fileset dir="${run.error.dir}" />
+            </attachments>
+         </send-mail> -->
+      </then>
+      <else>
+         <if><equals arg1="${positive.reporting}" arg2="true" />
+         <then>
+            <send-mail subject="The Unanet IMU (export) has successfully completed">
+               <![CDATA[
+                  <p>The Unanet IMU (export) has successfully completed.
+                  <p>The run.log is attached to this email.
+               ]]>
+               <attachments>
+                  <fileset dir="${run.log.dir}">
+                     <filename name="run.log"/>
+                  </fileset>
+               </attachments>
+            </send-mail>
+         </then>
+         </if>
+      </else>
+      </if>
+   </target>
+	
+   <!-- This target sends a test email -->
+   <target name="-test-email" description="Sends a test email to verify email functionality">
+      <send-mail subject="Unanet command line export test email">
+         <![CDATA[<p>If you receive this email, your command line export utility is
+                    correctly set up for emailing error notifications.]]>
+         <attachments/>
+      </send-mail>
+   </target>
+
+   <target name="test" depends="-header,-validate-export,-validate-access,-test-email">
+      <echo>Unanet IMU (export) Test Complete.</echo>
+   </target>
+
+</project>

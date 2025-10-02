@@ -1,0 +1,114 @@
+Unanet IMU (Integration Management Utility)
+-------------------------------------------------------------------------------------------------
+Welcome to the Unanet IMU release notes document.  This document gives a detailed view of changes 
+for each release.  In order for you to have the best possible install/upgrade experience, it is 
+recommended that you review this document prior to performing your upgrade.  Pay particular 
+attention to any changes made to the IMU since you last installed/upgraded and follow the 
+guidlines below.
+
+-------------------------------------------------------------------------------------------------
+Initial Installation Instructions
+-------------------------------------------------------------------------------------------------
+If this is your initial install, or you want an overview of the installation process itself, 
+please see the Unanet help documentation here:
+
+http://www.unanet.com/unadocs/current/unanet_menu/admin/import/integration_management_utility.htm
+
+-------------------------------------------------------------------------------------------------
+General Upgrade Instructions
+-------------------------------------------------------------------------------------------------
+If you already have an installed Unanet IMU on your system and wish to upgrade to the latest 
+version, please make sure to follow the upgrade instructions which can be found at the Unanet 
+help site located here:
+
+http://www.unanet.com/unadocs/current/unanet_menu/admin/import/imu_upgrade.htm
+
+Those instructions will indicate that you should also follow any release specific upgrade notes
+found in the appropriate section(s) below.  Note that if you are upgrading from an older version,
+you will need to follow the upgrade instructions below for each new version from oldest to 
+newest.
+
+-------------------------------------------------------------------------------------------------
+-------------------------------------------------------------------------------------------------
+**  Release Specific Upgrade Notes **
+-------------------------------------------------------------------------------------------------
+-------------------------------------------------------------------------------------------------
+
+*************************************************************************************************
+IMU 1.4.0 -- 2019-10-02
+*************************************************************************************************
+    • Update Import.jar/Export.jar to 19.1
+	• Update list of import templates to include purchasing templates
+	
+*************************************************************************************************
+IMU 1.3.1 -- 2012-11-09
+*************************************************************************************************
+
+   Changes
+   -------
+   * Abstracted email logic into its own ant script to allow for better 
+     access to email functionality from import and export scripts.	 
+   * Added positive reporting to the export functionality.   
+   * Added post-process timout functionality to the export process.
+   * Added TLS property to expand compatibility with different email systems.
+   * Added post-process example for calling IMU import from an IMU export.
+   
+   Upgrade Instructions
+   ---------------------
+   Please follow the general upgrade instructions as noted in the Unanet Help Documentation:
+   
+   http://www.unanet.com/unadocs/current/unanet_menu/admin/import/imu_upgrade.htm
+   
+   Specific update instructions for 1.3.1 are as follows:
+   1) If not already present in your imu_config.properties and imu_export_config.properties files,
+      add the following lines just after the email.to property (exact line position is not 
+	  important):
+	  
+      email.port=25
+      email.enableStartTLS=false
+	  
+   2) If not already present in your imu_export_config.properties file, add the following line just
+      after the post-processing.error.log property (exact line position is not important):
+	  
+	  post-processing.timeout=600000
+
+*************************************************************************************************
+IMU 1.2.1 -- 2010-12-17
+*************************************************************************************************
+
+   Changes
+   -------
+   * Added export capability.
+   * Added positive email reporting for import functionality.
+   * Added pre-process timeout functionality to the import process.
+   * Added ssl and port options for email logic.
+   
+   Upgrade Instructions
+   ---------------------
+   Please follow the general upgrade instructions as noted in the Unanet Help Documentation:
+   
+   http://www.unanet.com/unadocs/current/unanet_menu/admin/import/imu_upgrade.htm
+   
+   Specific update instructions for 1.2.1 are as follows:
+   1) If not already present in your imu_config.properties and imu_export_config.properties files,
+      add the following lines just after the email.to property (exact line position is not 
+	  important):
+	  
+      positive.reporting=false
+      email.ssl=false
+      email.port=25
+      #email.user=
+      #email.password=
+	  
+   2) If not already present in your imu_config.properties file, add the following line just
+      after the pre-processing.error.log property (exact line position is not important):
+	  
+	  pre-processing.timeout=600000
+   
+
+*************************************************************************************************
+IMU 1.1.1 
+*************************************************************************************************
+ 
+   * Initial version of the IMU relased
+   

@@ -1,0 +1,35 @@
+<project name="purge-files" default="purge" basedir=".">
+	
+   <!-- This target purges all files older than purge.days -->
+   <target name="purge" unless="purge-value-valid">
+      <tstamp>
+        <format property="delete.time" pattern="MM/dd/yyyy H:mm"
+                offset="-${purge.days}" unit="day"/>
+      </tstamp>
+      <echo>purge process - deleting data directories older than ${delete.time} in ${data.dir}...</echo>
+	  
+	  <mkdir dir="${data.dir}" />
+
+      <resourcecount property="count_files">
+         <dirset dir="${data.dir}">
+             <date checkdirs="true" datetime="${delete.time}" pattern="MM/dd/yyyy H:mm" when="before"/>
+         </dirset>
+      </resourcecount>
+
+      <if><equals arg1="${count_files}" arg2="0" /><then>
+         <echo>No files need purging.</echo>
+      </then><else>
+         <echo>Purging ${count_files} items...</echo>
+         <for param="thefile">
+            <dirset dir="${data.dir}">
+                <type type="dir"/>
+                <date checkdirs="true" datetime="${delete.time}" pattern="MM/dd/yyyy H:mm" when="before"/>
+            </dirset>
+            <sequential>
+               <delete dir="@{thefile}" verbose="true" includeemptydirs="true" failonerror="false"/>
+            </sequential>
+         </for>
+         <echo>Purge complete.</echo>
+      </else></if>
+   </target>
+</project>
