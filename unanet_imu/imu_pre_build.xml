@@ -7,7 +7,6 @@
       <echo>Generating CSV file for import...</echo>
       <exec executable="python" failonerror="true">
          <arg value="../move_file.py"/>
-         <arg value="import"/>
       </exec>
       <echo>CSV file generation complete.</echo>
 
