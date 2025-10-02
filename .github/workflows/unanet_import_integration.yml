@@ -3,9 +3,7 @@ name: Unanet Import Integration
 on:
   workflow_dispatch:
   # schedule:
-  #   - cron: '0 9 * * *'
-  #   - cron: '0 12 * * *'
-  #   - cron: '0 15 * * *'
+  #   - cron: '0 9,12,15 * * *'
 
 permissions:
   contents: read
@@ -68,6 +66,7 @@ jobs:
           SFTP_USER: ${{ secrets.SFTP_USER }}
           SFTP_RSA_PRIVATE_KEY: ${{ secrets.SFTP_RSA_PRIVATE_KEY }}
         continue-on-error: true
+
 
 
 
