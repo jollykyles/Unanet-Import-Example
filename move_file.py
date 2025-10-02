@@ -7,7 +7,7 @@ def move_file_to_imu():
 
     # Go up one level to find expenses.csv
     remote_file = cwd.parent / "expenses.csv"
-    local_dir = cwd / "data"
+    local_dir = cwd / "unanet_imu/data"
     local_dir.mkdir(parents=True, exist_ok=True)
     local_file = local_dir / "import.csv"
 
@@ -19,3 +19,4 @@ def move_file_to_imu():
 
 if __name__ == "__main__":
     move_file_to_imu()
+
