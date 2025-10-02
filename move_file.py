@@ -20,3 +20,4 @@ def move_file_to_imu():
         print(f"{remote_file} does not exist.")
 
 if __name__ == "__main__":
+    move_file_to_imu()
