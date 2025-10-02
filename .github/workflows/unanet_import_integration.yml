@@ -59,38 +59,6 @@ jobs:
           echo person.args= >> unanet_imu/imu_config.properties
           echo purge.days=0 >> unanet_imu/imu_config.properties
 
-      - name: Update IMU Export Config
-        run: |
-          echo "unanet.url=${{ secrets.UNANET_URL }}" > unanet_imu/imu_export_config.properties
-          echo "username=${{ secrets.UNANET_USERNAME }}" >> unanet_imu/imu_export_config.properties
-          echo "password=${{ secrets.UNANET_PASSWORD }}" >> unanet_imu/imu_export_config.properties
-          echo email.host=${{ secrets.EMAIL_HOST }} >> unanet_imu/imu_config.properties
-          echo email.port=${{ secrets.EMAIL_PORT }} >> unanet_imu/imu_config.properties
-          echo email.from=${{ secrets.EMAIL_FROM }} >> unanet_imu/imu_config.properties
-          echo email.to=${{ secrets.EMAIL_TO }} >> unanet_imu/imu_config.properties
-          echo email.ssl=false >> unanet_imu/imu_config.properties
-          echo email.enableStartTLS=true >> unanet_imu/imu_config.properties
-          echo positive.reporting=true >> unanet_imu/imu_config.properties
-          echo email.user=${{ secrets.EMAIL_USER }} >> unanet_imu/imu_config.properties
-          echo email.password=${{ secrets.EMAIL_PASSWORD }} >> unanet_imu/imu_config.properties
-          echo "run.exports=Person" >> unanet_imu/imu_export_config.properties
-          echo "Person.output.file=person.csv" >> unanet_imu/imu_export_config.properties
-          echo "Person.log.file=person.log" >> unanet_imu/imu_export_config.properties
-          echo "Person.export.template=Person" >> unanet_imu/imu_export_config.properties
-          echo "Person.empty-output-file-ok=true" >> unanet_imu/imu_export_config.properties
-          echo "Person.args=" >> unanet_imu/imu_export_config.properties
-          echo "purge.days=0" >> unanet_imu/imu_export_config.properties
-
-      - name: Run IMU Export
-        run: |
-          cd unanet_imu
-          ./unanet_imu_export.bat
-        env:
-          SFTP_HOST: ${{ secrets.SFTP_HOST }}
-          SFTP_USER: ${{ secrets.SFTP_USER }}
-          SFTP_RSA_PRIVATE_KEY: ${{ secrets.SFTP_RSA_PRIVATE_KEY }}
-        continue-on-error: true
-
       - name: Run IMU Import
         run: |
           cd unanet_imu
@@ -100,4 +68,5 @@ jobs:
           SFTP_USER: ${{ secrets.SFTP_USER }}
           SFTP_RSA_PRIVATE_KEY: ${{ secrets.SFTP_RSA_PRIVATE_KEY }}
         continue-on-error: true
+
 
